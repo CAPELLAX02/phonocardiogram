@@ -1,4 +1,4 @@
-package com.au.pc.controller;
+package com.au.pc.ui.controller;
 
 public class MainController {
 }

@@ -1,25 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.canvas.Canvas?>
 
-<BorderPane xmlns="http://javafx.com/javafx/20"
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.ankarauniv.phonocardiogram.controller.MainController">
+            fx:controller="com.au.pc.ui.controller.MainController">
 
     <top>
-        <HBox spacing="10" padding="10">
+        <HBox spacing="10" alignment="CENTER" padding="10">
             <Button text="Load WAV" onAction="#onLoadWav"/>
-            <Button text="Play" onAction="#onPlay"/>
+            <Button text="Play WAV" onAction="#onPlayWav"/>
+            <Button text="Start Mic" onAction="#onStartMic"/>
             <Button text="Stop" onAction="#onStop"/>
         </HBox>
     </top>
 
     <center>
-        <Canvas fx:id="waveformCanvas" width="1000" height="400"/>
+        <Canvas fx:id="waveformCanvas" width="980" height="400"/>
     </center>
 
     <bottom>
-        <Label fx:id="statusLabel" text="Status: Idle" padding="10"/>
+        <Label fx:id="statusLabel" text="Status: Ready" padding="10"/>
     </bottom>
 </BorderPane>

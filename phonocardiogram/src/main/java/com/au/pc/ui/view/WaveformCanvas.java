@@ -1,4 +1,4 @@
-package com.au.pc.visual;
+package com.au.pc.ui.view;
 
 public class WaveformCanvas {
 }
