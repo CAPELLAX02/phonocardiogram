@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.canvas.Canvas?>
+
+<BorderPane xmlns="http://javafx.com/javafx/20"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ankarauniv.phonocardiogram.controller.MainController">
+
+    <top>
+        <HBox spacing="10" padding="10">
+            <Button text="Load WAV" onAction="#onLoadWav"/>
+            <Button text="Play" onAction="#onPlay"/>
+            <Button text="Stop" onAction="#onStop"/>
+        </HBox>
+    </top>
+
+    <center>
+        <Canvas fx:id="waveformCanvas" width="1000" height="400"/>
+    </center>
+
+    <bottom>
+        <Label fx:id="statusLabel" text="Status: Idle" padding="10"/>
+    </bottom>
+</BorderPane>
