@@ -1,55 +1,79 @@
 package com.au.pc.core.audio;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
 
-public class WavFileSource implements AudioSource {
+public final class WavFileSource implements AudioSource {
 
-    private final File wavFile;
-    private AudioInputStream inputStream;
-    private AudioFormat format;
-    private byte[] buffer;
+    private final File              file;
+    private AudioInputStream        in;
+    private SourceDataLine          out;
+    private AudioFormat             format;
 
-    public WavFileSource(File wavFile) {
-        this.wavFile = wavFile;
+    public WavFileSource(File file) {
+        this.file = file;
     }
 
     @Override
-    public void start() {
-        try {
-            inputStream = AudioSystem.getAudioInputStream(wavFile);
-            format = inputStream.getFormat();
-            buffer = new byte[format.getFrameSize()];
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+    public void start() throws Exception {
+        AudioInputStream raw = AudioSystem.getAudioInputStream(file);
+        AudioFormat src = raw.getFormat();
+
+        /* Mono-16 bit PCM’e dönüştür */
+        format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
+                src.getSampleRate(),
+                16,
+                1,
+                2,
+                src.getSampleRate(),
+                false);
+
+        in = AudioSystem.getAudioInputStream(format, raw);
+
+        DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
+        out = (SourceDataLine) AudioSystem.getLine(info);
+        out.open(format);
+        out.start();
     }
 
     @Override
     public void stop() {
         try {
-            if (inputStream != null) {
-                inputStream.close();
+            if (out != null) {
+                out.drain();
+                out.close();
+            }
+            if (in != null) {
+                in.close();
             }
         } catch (IOException ignored) {
-            System.out.println(ignored.getMessage());
         }
     }
 
     @Override
-    public double readNextSample() {
-        try {
-            int bytesRead = inputStream.read(buffer);
-            if (bytesRead == -1) return Double.NaN;
-
-            int sample = (buffer[1] << 8) | (buffer[0] & 0xFF);
-            return sample / 32768.0;
-        } catch (IOException e) {
-            return Double.NaN;
-        }
+    public float getSampleRate() {
+        return format.getSampleRate();
     }
 
+    @Override
+    public int readSamples(float[] buffer) {
+        byte[] bytes = new byte[buffer.length * 2];
+        int bytesRead;
+        try {
+            bytesRead = in.read(bytes);
+        } catch (IOException e) {
+            return -1;
+        }
+        if (bytesRead == -1) {
+            return -1;
+        }
+        out.write(bytes, 0, bytesRead);
+        for (int i = 0; i < bytesRead / 2; i++) {
+            int lo = bytes[2 * i] & 0xFF;
+            int hi = bytes[2 * i + 1] << 8;
+            buffer[i] = (short) (hi | lo) / 32_768f;
+        }
+        return bytesRead / 2;
+    }
 }

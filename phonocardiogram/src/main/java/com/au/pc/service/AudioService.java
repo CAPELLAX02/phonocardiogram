@@ -4,58 +4,71 @@ import com.au.pc.core.audio.AudioSource;
 import com.au.pc.ui.view.WaveformCanvas;
 import javafx.application.Platform;
 
-public class AudioService {
+import java.util.concurrent.*;
 
-    private final WaveformCanvas waveformCanvas;
-    private AudioSource currentSource;
-    private Thread readThread;
-    private volatile boolean running = false;
+public final class AudioService {
 
-    public AudioService(WaveformCanvas waveformCanvas) {
-        this.waveformCanvas = waveformCanvas;
+    private final WaveformCanvas canvas;
+    private final SignalService  signal;
+
+    private ScheduledExecutorService exec;
+    private AudioSource              src;
+    private float[]                  buf;
+
+    public AudioService(WaveformCanvas canvas, SignalService signal) {
+        this.canvas = canvas;
+        this.signal = signal;
     }
 
-    public void startWithSource(AudioSource source) {
+    public void play(AudioSource source) {
         stop();
+        this.src = source;
+        try {
+            src.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        signal.setSampleRate(src.getSampleRate());
 
-        this.currentSource = source;
-        currentSource.start();
-        running = true;
+        int fps   = 60;
+        int batch = Math.max(1_024, (int) (src.getSampleRate() / fps));
+        buf = new float[batch];
 
-        readThread = new Thread(() -> {
-            while (running) {
-                double sample = currentSource.readNextSample();
-                if (Double.isNaN(sample)) break;
+        long period = 1_000L / fps;
+        exec = Executors.newSingleThreadScheduledExecutor();
+        exec.scheduleAtFixedRate(() -> {
+            int n = src.readSamples(buf);
+            if (n == -1) { stop(); return; }
 
-                double amplitude = Math.max(-1.0, Math.min(1.0, sample));
+            double sum = 0;
+            for (int i = 0; i < n; i++) sum += buf[i] * buf[i];
+            double rms = Math.sqrt(sum / n);
 
-                Platform.runLater(() -> waveformCanvas.draw(amplitude));
+            if (rms > 2e-4) {
+                signal.accept(buf, n);
 
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    break;
-                }
+                float[] copy = new float[n];
+                System.arraycopy(buf, 0, copy, 0, n);
+                Platform.runLater(() -> canvas.push(copy, n));
+            } else {
+                Platform.runLater(canvas::pushSilence);
             }
-        });
-        readThread.setDaemon(true);
-        readThread.start();
+        }, 0, period, TimeUnit.MILLISECONDS);
+
     }
 
     public void stop() {
-        running = false;
-
-        if (readThread != null) {
-            readThread.interrupt();
-            readThread = null;
+        if (exec != null) {
+            exec.shutdownNow();
+            exec = null;
         }
-
-        if (currentSource != null) {
-            currentSource.stop();
-            currentSource = null;
+        if (src != null) {
+            src.stop();
+            src = null;
         }
-
-        Platform.runLater(waveformCanvas::clear);
+        Platform.runLater(() -> {
+            canvas.clear();
+            signal.reset();
+        });
     }
-
 }

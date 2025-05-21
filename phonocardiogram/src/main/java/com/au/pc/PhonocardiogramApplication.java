@@ -8,12 +8,11 @@ import javafx.stage.Stage;
 public class PhonocardiogramApplication extends Application {
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/main.fxml"));
-        Scene scene = new Scene(loader.load(), 1000, 600);
-        primaryStage.setTitle("Phonocardiogram Monitor");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+    public void start(Stage stage) throws Exception {
+        Scene scene = new Scene(new FXMLLoader(getClass().getResource("/ui/main.fxml")).load(), 1000, 600);
+        stage.setTitle("Phonocardiogram Monitor");
+        stage.setScene(scene);
+        stage.show();
     }
 
     public static void main(String[] args) {

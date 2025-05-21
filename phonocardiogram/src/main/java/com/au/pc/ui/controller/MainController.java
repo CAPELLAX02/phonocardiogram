@@ -1,59 +1,90 @@
 package com.au.pc.ui.controller;
 
-import com.au.pc.core.audio.AudioSource;
-import com.au.pc.core.audio.MicrophoneSource;
-import com.au.pc.core.audio.WavFileSource;
-import com.au.pc.service.AudioService;
+import com.au.pc.core.audio.*;
+import com.au.pc.service.*;
 import com.au.pc.ui.view.WaveformCanvas;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 
 import java.io.File;
 
-public class MainController {
+public final class MainController {
 
+    /* UI refs */
     @FXML private Canvas waveformCanvas;
-    @FXML private Label statusLabel;
+    @FXML private Label  statusOut;
+    @FXML private Label  bpmOut;
+    @FXML private Button toggleBtn;
 
-    private AudioService audioService;
+    /* Services */
+    private AudioService  audio;
+    private SignalService signal;
+
+    /* State */
+    private File    wavFile;
+    private boolean filePlaying;
+    private boolean micPlaying;
 
     @FXML
     public void initialize() {
-        WaveformCanvas canvasWrapper = new WaveformCanvas(waveformCanvas);
-        audioService = new AudioService(canvasWrapper);
+        WaveformCanvas view = new WaveformCanvas(waveformCanvas);
+        signal             = new SignalService(bpmOut);
+        audio              = new AudioService(view, signal);
+
+        statusOut.setText("Ready");
+        bpmOut.setText("BPM: –");
     }
+
+    /* ──────────────── UI callbacks ───────────────────────────────── */
 
     @FXML
     public void onLoadWav() {
-        FileChooser chooser = new FileChooser();
-        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("WAV Files", "*.wav"));
-        File selected = chooser.showOpenDialog(null);
-
-        if (selected != null) {
-            AudioSource wavSource = new WavFileSource(selected);
-            audioService.startWithSource(wavSource);
-            statusLabel.setText("Playing file: " + selected.getName());
+        FileChooser fc = new FileChooser();
+        fc.getExtensionFilters()
+                .add(new FileChooser.ExtensionFilter("WAV", "*.wav"));
+        File f = fc.showOpenDialog(waveformCanvas.getScene().getWindow());
+        if (f != null) {
+            wavFile = f;
+            filePlaying = false;
+            toggleBtn.setText("Play");
+            statusOut.setText("Loaded: " + f.getName());
         }
     }
 
     @FXML
     public void onPlayWav() {
-        // optional
+        if (wavFile == null) return;
+        if (!filePlaying) {
+            audio.play(new WavFileSource(wavFile));
+            filePlaying = true; micPlaying = false;
+            toggleBtn.setText("Pause");
+            statusOut.setText("Playing: " + wavFile.getName());
+        } else stopAll();
     }
 
     @FXML
     public void onStartMic() {
-        AudioSource micSource = new MicrophoneSource();
-        audioService.startWithSource(micSource);
-        statusLabel.setText("Live microphone input started.");
+        if (!micPlaying) {
+            audio.play(new MicrophoneSource());
+            micPlaying = true; filePlaying = false;
+            toggleBtn.setText("Pause");
+            statusOut.setText("Microphone live");
+        } else stopAll();
     }
 
     @FXML
     public void onStop() {
-        audioService.stop();
-        statusLabel.setText("Stopped.");
+        stopAll();
     }
 
+    /* ─────────────── helpers ─────────────────────────────────────── */
+
+    private void stopAll() {
+        audio.stop();
+        filePlaying = micPlaying = false;
+        toggleBtn.setText("Play");
+        statusOut.setText("Stopped");
+    }
 }

@@ -2,24 +2,18 @@ package com.au.pc.core.audio;
 
 import javax.sound.sampled.*;
 
-public class MicrophoneSource implements AudioSource {
+public final class MicrophoneSource implements AudioSource {
 
     private TargetDataLine line;
-    private AudioFormat format;
-    private byte[] buffer;
+    private AudioFormat    format;
 
     @Override
-    public void start() {
-        try {
-            format = new AudioFormat(44100.0f, 16, 1, true, false);
-            DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
-            line = (TargetDataLine) AudioSystem.getLine(info);
-            line.open(format);
-            line.start();
-            buffer = new byte[2];
-        } catch (LineUnavailableException e) {
-            System.out.println(e.getMessage());
-        }
+    public void start() throws LineUnavailableException {
+        format = new AudioFormat(44_100f, 16, 1, true, false);
+        DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
+        line = (TargetDataLine) AudioSystem.getLine(info);
+        line.open(format);
+        line.start();
     }
 
     @Override
@@ -31,10 +25,25 @@ public class MicrophoneSource implements AudioSource {
     }
 
     @Override
-    public double readNextSample() {
-        int bytesRead = line.read(buffer, 0, buffer.length);
-        if (bytesRead != 2) return Double.NaN;
-        int sample = (buffer[1] << 8) | (buffer[0] & 0xFF);
-        return sample / 32768.0;
+    public float getSampleRate() {
+        return format.getSampleRate();
+    }
+
+    @Override
+    public int readSamples(float[] buffer) {
+        if (line == null) {
+            return -1;
+        }
+        byte[] bytes = new byte[buffer.length * 2];
+        int bytesRead = line.read(bytes, 0, bytes.length);
+        if (bytesRead <= 0) {
+            return -1;
+        }
+        for (int i = 0; i < bytesRead / 2; i++) {
+            int lo = bytes[2 * i] & 0xFF;
+            int hi = bytes[2 * i + 1] << 8;
+            buffer[i] = (short) (hi | lo) / 32_768f;
+        }
+        return bytesRead / 2;
     }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -9,19 +10,27 @@
             fx:controller="com.au.pc.ui.controller.MainController">
 
     <top>
-        <HBox spacing="10" alignment="CENTER" padding="10">
-            <Button text="Load WAV" onAction="#onLoadWav"/>
-            <Button text="Play WAV" onAction="#onPlayWav"/>
-            <Button text="Start Mic" onAction="#onStartMic"/>
-            <Button text="Stop" onAction="#onStop"/>
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+            <Button text="Load WAV"           onAction="#onLoadWav"/>
+            <Button fx:id="toggleBtn" text="Play" onAction="#onPlayWav"/>
+            <Separator orientation="VERTICAL"/>
+            <Button text="Mic / Pause"        onAction="#onStartMic"/>
+            <Separator orientation="VERTICAL"/>
+            <Button text="Stop"               onAction="#onStop"/>
         </HBox>
     </top>
 
     <center>
-        <Canvas fx:id="waveformCanvas" width="980" height="400"/>
+        <Canvas fx:id="waveformCanvas" width="980" height="420"/>
     </center>
 
     <bottom>
-        <Label fx:id="statusLabel" text="Status: Ready" padding="10"/>
+        <HBox alignment="CENTER_LEFT" spacing="40">
+            <padding><Insets top="6" right="10" bottom="6" left="10"/></padding>
+            <Label fx:id="statusOut" text="Status"/>
+            <Label fx:id="bpmOut"    text="BPM: –"
+                   style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+        </HBox>
     </bottom>
 </BorderPane>
