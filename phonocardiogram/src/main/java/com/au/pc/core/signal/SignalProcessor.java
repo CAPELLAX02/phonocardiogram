@@ -3,18 +3,12 @@ package com.au.pc.core.signal;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-/**
- * Basit ve sağlam BPM tespiti:
- *   • adaptif eşik (RMS × 3)
- *   • min 450 ms arayla pik kabulü (≤133 BPM)
- *   • son 10 pik saklanır, 4 s sessizlikte sıfırlar
- */
 public final class SignalProcessor {
 
     private static final double RMS_ALPHA  = 0.9;
     private static final double THRESH_K   = 3.0;
-    private static final float  REFRACT_MS = 450f;   // çift saymayı engeller
-    private static final float  STALE_SEC  = 4f;     // sessizlik sınırı
+    private static final float  REFRACT_MS = 450f;
+    private static final float  STALE_SEC  = 4f;
     private static final int    MAX_PEAKS  = 10;
 
     private final float sampleRate;
@@ -31,7 +25,6 @@ public final class SignalProcessor {
         this.staleSamples      = (long) (STALE_SEC  * fs);
     }
 
-    /* ---------------------------------------------------------------- */
     public void analyze(float[] buf, int len) {
 
         /* adaptif RMS → eşik */
@@ -50,18 +43,16 @@ public final class SignalProcessor {
         }
     }
 
-    /* ---------------------------------------------------------------- */
     public double bpm() {
 
         if (peaks.size() < 2) return 0;
 
         long lastPeak = peaks.getLast();
-        if (samples - lastPeak > staleSamples) {   // uzun sessizlik
+        if (samples - lastPeak > staleSamples) {
             peaks.clear();
             return 0;
         }
 
-        /* ortalama aralık (son N-1 aralık) */
         long prev = peaks.peekFirst();
         double sum = 0; int n = 0;
         for (long p : peaks) {
@@ -73,7 +64,7 @@ public final class SignalProcessor {
         if (n == 0) return 0;
 
         double periodSamples = sum / n;
-        return 60.0 * sampleRate / periodSamples;   // BPM
+        return 60.0 * sampleRate / periodSamples;
     }
 
     public void reset() {

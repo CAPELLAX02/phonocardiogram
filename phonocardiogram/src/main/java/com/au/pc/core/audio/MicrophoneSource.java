@@ -5,7 +5,7 @@ import javax.sound.sampled.*;
 public final class MicrophoneSource implements AudioSource {
 
     private TargetDataLine line;
-    private AudioFormat    format;
+    private AudioFormat format;
 
     @Override
     public void start() throws LineUnavailableException {

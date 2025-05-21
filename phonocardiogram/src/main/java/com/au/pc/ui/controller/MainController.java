@@ -12,17 +12,15 @@ import java.io.File;
 
 public final class MainController {
 
-    /* UI refs */
-    @FXML private Canvas waveformCanvas;
-    @FXML private Label  statusOut;
-    @FXML private Label  bpmOut;
+    @FXML
+    private Canvas waveformCanvas;
+    @FXML private Label statusOut;
+    @FXML private Label bpmOut;
     @FXML private Button toggleBtn;
 
-    /* Services */
-    private AudioService  audio;
+    private AudioService audio;
     private SignalService signal;
 
-    /* State */
     private File    wavFile;
     private boolean filePlaying;
     private boolean micPlaying;
@@ -30,14 +28,12 @@ public final class MainController {
     @FXML
     public void initialize() {
         WaveformCanvas view = new WaveformCanvas(waveformCanvas);
-        signal             = new SignalService(bpmOut);
-        audio              = new AudioService(view, signal);
+        signal = new SignalService(bpmOut);
+        audio = new AudioService(view, signal);
 
         statusOut.setText("Ready");
         bpmOut.setText("BPM: –");
     }
-
-    /* ──────────────── UI callbacks ───────────────────────────────── */
 
     @FXML
     public void onLoadWav() {
@@ -78,8 +74,6 @@ public final class MainController {
     public void onStop() {
         stopAll();
     }
-
-    /* ─────────────── helpers ─────────────────────────────────────── */
 
     private void stopAll() {
         audio.stop();

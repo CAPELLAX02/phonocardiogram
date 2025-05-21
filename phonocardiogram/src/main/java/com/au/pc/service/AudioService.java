@@ -9,11 +9,11 @@ import java.util.concurrent.*;
 public final class AudioService {
 
     private final WaveformCanvas canvas;
-    private final SignalService  signal;
+    private final SignalService signal;
 
     private ScheduledExecutorService exec;
-    private AudioSource              src;
-    private float[]                  buf;
+    private AudioSource src;
+    private float[] buf;
 
     public AudioService(WaveformCanvas canvas, SignalService signal) {
         this.canvas = canvas;

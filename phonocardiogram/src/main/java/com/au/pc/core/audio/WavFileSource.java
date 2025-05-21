@@ -6,10 +6,10 @@ import java.io.IOException;
 
 public final class WavFileSource implements AudioSource {
 
-    private final File              file;
-    private AudioInputStream        in;
-    private SourceDataLine          out;
-    private AudioFormat             format;
+    private final File file;
+    private AudioInputStream in;
+    private SourceDataLine out;
+    private AudioFormat format;
 
     public WavFileSource(File file) {
         this.file = file;
@@ -20,7 +20,6 @@ public final class WavFileSource implements AudioSource {
         AudioInputStream raw = AudioSystem.getAudioInputStream(file);
         AudioFormat src = raw.getFormat();
 
-        /* Mono-16 bit PCM’e dönüştür */
         format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
                 src.getSampleRate(),
                 16,

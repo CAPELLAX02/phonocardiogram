@@ -13,14 +13,14 @@ public final class WaveformCanvas {
     private static final float SMOOTH = 0.35f;
 
     private final Canvas canvas;
-    private final GraphicsContext g;
+    private final GraphicsContext graphicsContext;
 
     private final float[] trace;
     private int writeX;
 
     public WaveformCanvas(Canvas canvas) {
         this.canvas = canvas;
-        this.g = canvas.getGraphicsContext2D();
+        this.graphicsContext = canvas.getGraphicsContext2D();
         this.trace = new float[(int) canvas.getWidth()];
         initGraphics();
     }
@@ -55,43 +55,43 @@ public final class WaveformCanvas {
 
     private void initGraphics() {
         canvas.setFocusTraversable(false);
-        g.setLineWidth(1.2);
-        g.setStroke(Color.LIME);
-        g.setFill(Color.BLACK);
-        g.setGlobalAlpha(1.0);
+        graphicsContext.setLineWidth(1.2);
+        graphicsContext.setStroke(Color.LIME);
+        graphicsContext.setFill(Color.BLACK);
+        graphicsContext.setGlobalAlpha(1.0);
     }
 
     private void draw() {
-        int    w   = trace.length;
-        int    h   = (int) canvas.getHeight();
+        int w = trace.length;
+        int h = (int) canvas.getHeight();
         double mid = h / 2.0;
 
-        g.setFill(Color.BLACK);
-        g.fillRect(0, 0, w, h);
+        graphicsContext.setFill(Color.BLACK);
+        graphicsContext.fillRect(0, 0, w, h);
 
-        g.setStroke(Color.LIME);
-        g.setLineWidth(1.2);
+        graphicsContext.setStroke(Color.LIME);
+        graphicsContext.setLineWidth(1.2);
 
         double[] xs = new double[w];
         double[] ys = new double[w];
         for (int i = 0; i < w; i++) {
-            int idx   = (writeX + i) % w;
-            float v   = trace[idx];
+            int idx = (writeX + i) % w;
+            float v = trace[idx];
             xs[i] = i;
             ys[i] = mid - v * mid;
         }
-        g.strokePolyline(xs, ys, w);
+        graphicsContext.strokePolyline(xs, ys, w);
     }
 
     @SuppressWarnings("unused")
     private void drawGrid(int w, int h, double mid) {
-        g.setStroke(Color.web("#202020"));
+        graphicsContext.setStroke(Color.web("#202020"));
         for (int y = 0; y < h; y += 10) {
-            g.setLineWidth((y % 50 == 0) ? 1.0 : 0.3);
-            g.strokeLine(0, y, w, y);
+            graphicsContext.setLineWidth((y % 50 == 0) ? 1.0 : 0.3);
+            graphicsContext.strokeLine(0, y, w, y);
         }
-        g.setLineWidth(1.0);
-        g.setStroke(Color.web("#009900"));
-        g.strokeLine(0, mid, w, mid);
+        graphicsContext.setLineWidth(1.0);
+        graphicsContext.setStroke(Color.web("#009900"));
+        graphicsContext.strokeLine(0, mid, w, mid);
     }
 }
